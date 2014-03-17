@@ -25,8 +25,20 @@ module Slack
       unless payload.has_key? :channel
         raise ArgumentError, "You must set a channel"
       end
+      
+      req = Net::HTTP::Post.new(endpoint.request_uri)
+      req.set_form_data(payload: payload.to_json)
 
-      Net::HTTP.post_form endpoint, payload: payload.to_json
+      response = Net::HTTP.start(endpoint.host, endpoint.port, :use_ssl => true)  do |http|
+        res = http.request(req)
+        if res.body == "ok"
+          return true 
+        else
+          return res.body
+        end
+      end
+
+      response
     end
 
     private
